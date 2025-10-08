@@ -1,7 +1,7 @@
 export interface Product {
   name: string;
-  price: number; // UZSda
-  image: string; // URL
+  price: number; 
+  image: string; 
   composition: string;
 }
 

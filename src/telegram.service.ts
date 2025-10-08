@@ -42,6 +42,38 @@ export class TelegramService {
       this.userStates[userId].step = 'phone';
     });
 
+    this.bot.onText(/\/users/, async (msg) => {
+      const chatId = msg.chat.id;
+      if (!msg.from) return this.bot.sendMessage(chatId, 'Foydalanuvchi ma\'lumotlari topilmadi.');
+      const userId = msg.from.id;
+
+      if (userId !== this.adminId) {
+        return this.bot.sendMessage(chatId, 'Bu buyruq faqat admin uchun mavjud.');
+      }
+
+      try {
+        const orders = await this.orderService.getAllOrders();
+        if (orders.length === 0) {
+          return this.bot.sendMessage(chatId, 'Hozircha hech qanday buyurtma yo‘q.');
+        }
+
+        const userList = orders.map((order, index) => {
+          return `Foydalanuvchi ${index + 1}:\n` +
+                 `ID: ${order.userId}\n` +
+                 `Ismi: ${order.name || 'Noma\'lum'}\n` +
+                 `Telefon: ${order.phone}\n` +
+                 `Mahsulot: ${order.productName}\n` +
+                 `Lokatsiya: ${order.location.lat}, ${order.location.lon}\n` +
+                 `Buyurtma vaqti: ${new Date(order.createdAt).toLocaleString('uz-UZ')}\n` +
+                 '---';
+        }).join('\n');
+
+        this.bot.sendMessage(chatId, `Foydalanuvchilar ro‘yxati:\n${userList}`);
+      } catch (error) {
+        this.bot.sendMessage(chatId, 'Foydalanuvchilar ro‘yxatini olishda xato yuz berdi.');
+      }
+    });
+
     this.bot.on('contact', (msg) => {
       const chatId = msg.chat.id;
       if (!msg.from) return this.bot.sendMessage(chatId, 'Foydalanuvchi ma\'lumotlari topilmadi.');
@@ -113,7 +145,7 @@ export class TelegramService {
         }
 
         try {
-          await this.orderService.createOrder(userId, productName, userState.phone, userState.location);
+          await this.orderService.createOrder(userId, productName, userState.phone, userState.location, userState.name);
           this.bot.sendMessage(chatId, `Buyurtma qabul qilindi: ${productName}. Yetkazib berish: ${userState.location.lat}, ${userState.location.lon}. Telefon: ${userState.phone}`);
           this.bot.sendMessage(this.adminId, `Yangi buyurtma:\nMahsulot: ${productName}\nFoydalanuvchi: ${userState.name}\nTelefon: ${userState.phone}\nLokatsiya: ${userState.location.lat}, ${userState.location.lon}`);
         } catch (error) {

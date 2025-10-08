@@ -6,7 +6,7 @@ export type Location = {
   lon: number;
 };
 
-@Schema({ timestamps: true }) // createdAt va updatedAt avtomatik qo'shiladi
+@Schema({ timestamps: true })
 export class Order extends Document {
   @Prop({ required: true })
   userId: number;
@@ -25,6 +25,15 @@ export class Order extends Document {
     },
   })
   location: Location;
+
+  @Prop()
+  name: string;
+
+  @Prop({ type: Date, default: Date.now })
+  createdAt: Date;
+
+  @Prop({ type: Date, default: Date.now })
+  updatedAt: Date;
 }
 
 export const OrderSchema = SchemaFactory.createForClass(Order);

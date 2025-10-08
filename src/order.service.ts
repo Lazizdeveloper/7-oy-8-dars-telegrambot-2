@@ -7,14 +7,18 @@ import { Order } from './order.schema';
 export class OrderService {
   constructor(@InjectModel(Order.name) private orderModel: Model<Order>) {}
 
-  async createOrder(userId: number, productName: string, phone: string, location: { lat: number; lon: number }) {
+  async createOrder(userId: number, productName: string, phone: string, location: { lat: number; lon: number }, name?: string) {
     const order = new this.orderModel({
       userId,
       productName,
       phone,
       location,
-      createdAt: new Date(),
+      name,
     });
     return order.save();
+  }
+
+  async getAllOrders() {
+    return this.orderModel.find().exec();
   }
 }
